@@ -60,25 +60,7 @@ angular
         }
       })
       
-      .state('profile', {
-        url: '/profile',
-        controller: 'ProfileCtrl as profileCtrl',
-        templateUrl: 'users/profile.html',
-        resolve: {
-            auth: function($state, Users, Auth){
-            return Auth.$requireAuth().catch(function(){
-                $state.go('home');
-            });
-            },
-            profile: function(Users, Auth){
-            return Auth.$requireAuth().then(function(auth){
-                return Users.getProfile(auth.uid).$loaded();
-            });
-            }
-        }
-        })
-        
-        .state('channels', {
+      .state('channels', {
             url: '/channels',
             controller: 'ChannelsCtrl as channelsCtrl',
             templateUrl: 'channels/index.html',
@@ -97,9 +79,48 @@ angular
                     });
                 }, function(error){
                     $state.go('home');
-                });
+                    });
+                }
             }
+      })
+                  
+        .state('channels.messages', {
+            url: '/{channelId}/messages',
+            templateUrl: 'channels/messages.html',
+            controller: 'MessagesCtrl as messagesCtrl',
+            resolve: {
+                messages: function($stateParams, Messages){
+                return Messages.forChannel($stateParams.channelId).$loaded();
+                },
+                channelName: function($stateParams, channels){
+                return '#'+channels.$getRecord($stateParams.channelId).name;
+                }
             }
+        })
+            
+        .state('channels.create', {
+            url: '/create',
+            templateUrl: 'channels/create.html',
+            controller: 'ChannelsCtrl as channelsCtrl'
+        })
+
+       
+      .state('profile', {
+        url: '/profile',
+        controller: 'ProfileCtrl as profileCtrl',
+        templateUrl: 'users/profile.html',
+        resolve: {
+            auth: function($state, Users, Auth){
+            return Auth.$requireAuth().catch(function(){
+                $state.go('home');
+            });
+            },
+            profile: function(Users, Auth){
+            return Auth.$requireAuth().then(function(auth){
+                return Users.getProfile(auth.uid).$loaded();
+            });
+            }
+        }
         });
 
     $urlRouterProvider.otherwise('/');
